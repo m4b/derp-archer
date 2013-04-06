@@ -1,5 +1,4 @@
 \begin{code}
-{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances #-}
 
 module Nullable(nullable) where
 
