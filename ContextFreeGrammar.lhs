@@ -1,5 +1,10 @@
+
+
 \begin{code}
 {-# LANGUAGE FlexibleInstances #-}
+
+module ContextFreeGrammar where
+
 type Grammar nt t = [Production nt t]
 
 
@@ -25,6 +30,5 @@ simpleGrammar = [a,b,c,d] where
   c = Production "C" (Term "a" (NonT "B" Empty))
   d = Production "D" (NonT "B" (Term "a" Empty))
 
-
-
 \end{code}
+
