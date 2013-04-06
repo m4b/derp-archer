@@ -5,14 +5,14 @@ type Grammar nt t = [Production nt t]
 
 
 data Production nt t = Production {nonterminal :: nt,
-                                   rhs         :: RHS nt t}
+                                   rhs         :: RHS nt t} deriving (Eq, Ord)
 
 instance Show (Production String String) where
   show (Production nt rhs) = nt ++ " -> " ++ show rhs
 
 data RHS nt t = Empty
               | Term t (RHS nt t)
-              | NonT nt (RHS nt t)
+              | NonT nt (RHS nt t) deriving (Eq, Ord)
 
 instance Show (RHS String String) where
   show Empty = ""
