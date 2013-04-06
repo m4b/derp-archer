@@ -1,5 +1,6 @@
 \begin{code}
 {-# LANGUAGE FlexibleInstances #-}
+module ContextFreeGrammar(Grammar, Production(..), RHS(..)) where
 type Grammar nt t = [Production nt t]
 
 
