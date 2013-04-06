@@ -23,22 +23,6 @@ isNull :: Production nt t -> Bool
 isNull (Production _ Empty) = True
 isNull _ = False
 
-class Drop b a where
-  drop :: b -> a -> a
-
-instance (Eq nt) => Drop nt (RHS nt t) where
-  drop x (NonT nt rhs) 
-    | x == nt = drop x rhs
-    | otherwise = (NonT nt (drop x rhs))
-  drop x (Term t rhs) = Term t (drop x rhs)
-  drop _ Empty = Empty
-
-instance (Eq nt) => Drop nt (Production nt t) where
-  drop x (Production nt rhs) = Production nt (drop x rhs)
-
-instance (Eq nt) => Drop nt (Grammar nt t) where
-  drop x grammar = map (drop x) grammar
-
 simpleGrammar :: Grammar String String
 simpleGrammar = [a] where
   a = Production "A" (Term "ab" Empty)
