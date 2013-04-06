@@ -5,3 +5,11 @@ cabal-dev
 *.chi
 *.chs.h
 .virthualenv
+*~
+*#
+*.aux
+*.log
+*.out
+*.ptb
+*.tex
+
