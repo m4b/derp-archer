@@ -20,6 +20,9 @@ data Production nt t = Production {nonterminal :: nt,
 instance Show (Production String String) where
   show (Production nt rhs) = nt ++ " -> " ++ show rhs
 
+instance Show (Production Char Char) where
+  show (Production nt rhs) = show nt ++ " -> " ++ show rhs
+
 data RHS nt t = Empty
               | Term t (RHS nt t)
               | NonT nt (RHS nt t)
@@ -28,6 +31,12 @@ instance Show (RHS String String) where
   show Empty = ""
   show (Term t rhs) = t ++ (show rhs)
   show (NonT nt rhs) = nt ++ (show rhs)
+
+instance Show (RHS Char Char) where
+  show Empty = ""
+  show (Term t rhs) = show t ++ (show rhs)
+  show (NonT nt rhs) = show nt ++ (show rhs)
+
 
 simpleGrammar :: Grammar String String
 simpleGrammar = [a,b,c,d] where
