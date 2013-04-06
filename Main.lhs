@@ -41,7 +41,7 @@ module Main where
 
 import ContextFreeGrammar
 import ScannerAndParser
---import BadHygiene
+import BadHygiene
 
 import System.Environment
 
