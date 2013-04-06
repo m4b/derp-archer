@@ -1,8 +1,15 @@
+\section{Context Free Grammar}
 
+In this section we provide the context free grammar data type.
+
+At its heart, a grammar it consists of a list of productions, where each production consists of a constructor and two arguments; the first a paramaterized nonterminal, and the second a paramaterized right hand side.
+
+An |RHS| is either empty, a terminal, which takes two arguments --- the paramaterized object representing a terminal, and another |RHS|; or a non-terminal, which similarly takes two arguments.
 
 \begin{code}
 {-# LANGUAGE FlexibleInstances #-}
-module ContextFreeGrammar(Grammar, Production(..), RHS(..)) where
+module ContextFreeGrammar
+       (Grammar, Production(..), RHS(..)) where
 
 type Grammar nt t = [Production nt t]
 

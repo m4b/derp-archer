@@ -31,15 +31,24 @@
 %include ContextFreeGrammar.lhs
 %include ScannerAndParser.lhs
 
+\section{Main module}
+
+The main module puts everything together, takes an textual representation of a context-free grammar as input, scans, parses, and performs the rest of the duties that are required.
+
 \begin{code}
 
 module Main where
 
 import ContextFreeGrammar
 import ScannerAndParser
+--import BadHygiene
 
+import System.Environment
 
-main = putStrLn "hello"
+main = do 
+     [file] <- getArgs
+     contents <- readFile file
+     putStrLn $ show contents
 
 \end{code}
 
