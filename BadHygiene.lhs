@@ -1,6 +1,6 @@
 \begin{code}
 module BadHygiene(computeReachable,
-                  elminateUnreachable,
+                  eliminateUnreachable,
                   computeGenerating,
                   eliminateNonGenerating,
                   eliminateUseless,
@@ -33,9 +33,9 @@ eliminateNonGenerating g = undefined
 eliminateUseless :: Ord nt => Grammar nt t -> Grammar nt t
 eliminateUseless = eliminateUnreachable . eliminateNonGenerating
 
-isEmptyGrammar :: Ord nt => Grammar nt t -> Bool
+isEmptyGrammar :: (Eq t, Ord nt) => Grammar nt t -> Bool
 isEmptyGrammar [] = True
-isEmptyGrammar g = not . elem s $ g'where
+isEmptyGrammar g = not . elem s $ g' where
   g' = eliminateNonGenerating g
   s = head g   
       
