@@ -1,0 +1,7 @@
+Alphabet -> areglorious
+Beautiful -> finejustfine
+Cats -> areglorious Duh
+Duh -> Beautiful Cats Alphabet
+Beauty -> 
+Beauty -> Cats
+Cats -> Beauty

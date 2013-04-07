@@ -86,7 +86,7 @@ parseRHS ((Symbol (c:cs)):rhs) =
 
 parse :: [GrammarToken] -> Grammar String String
 parse [] = []
-parse (NewLineToken:[]) = []
+parse (NewLineToken:p) = parse p
 parse ((Symbol s):ArrowToken:rhs) = 
   let (production,rhs') = parseRHS rhs in
   (Production s (production)):parse rhs'
