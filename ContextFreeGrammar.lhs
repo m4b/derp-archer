@@ -27,7 +27,7 @@ data Production nt t = Production {nonterminal :: nt,
                                    rhs         :: RHS nt t} deriving (Eq, Ord)
 
 instance Show (Production String String) where
-  show (Production nt rhs) = nt ++ " -> " ++ show rhs
+  show (Production nt rhs) = nt ++ " ->" ++ show rhs
 
 instance Show (Production Char Char) where
   show (Production nt rhs) = show nt ++ " -> " ++ show rhs
@@ -44,8 +44,8 @@ data RHS nt t = Empty
 
 instance Show (RHS String String) where
   show Empty = ""
-  show (Term t rhs) = t ++ (show rhs)
-  show (NonT nt rhs) = nt ++ (show rhs)
+  show (Term t rhs) = " " ++ t ++ (show rhs)
+  show (NonT nt rhs) = " " ++ nt ++ (show rhs)
 
 instance Show (RHS Char Char) where
   show Empty = ""

@@ -29,7 +29,7 @@
 \maketitle
 
 %include ContextFreeGrammar.lhs
-%include ScannerAndParser.lhs
+%include ScanAndParse.lhs
 
 \section{Main module}
 
@@ -40,7 +40,7 @@ The main module puts everything together, takes an textual representation of a c
 module Main where
 
 import ContextFreeGrammar
-import ScannerAndParser
+import ScanAndParse
 import BadHygiene
 
 import System.Environment
