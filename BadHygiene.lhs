@@ -24,35 +24,49 @@ computeReachable ps = go (S.singleton . nonterminal . head $ ps) (ps ++ ps) wher
 eliminateUnreachable :: Ord nt => Grammar nt t -> Grammar nt t
 eliminateUnreachable g = cleanGrammar where
   reachable = computeReachable $ g
-  cleanProductions = Filterable.filter (`S.member` reachable) g
-  cleanGrammar = Prelude.filter (\(Production nt rhs) -> S.member nt reachable) cleanProductions
+  --unnecessary?  By definition, the unreachable non-terminals cannot be in any
+  --other production list.
+  --cleanProductions = Filterable.filter (`S.member` reachable) g
+  cleanGrammar = Prelude.filter (\(Production nt rhs) -> S.member nt reachable) g
 
-computeGenerating :: Ord nt => Grammar nt t -> S.Set nt
-computeGenerating g = undefined
+computeGenerating :: (Ord nt, Ord t) => Grammar nt t -> S.Set nt
+computeGenerating [] = S.empty
+computeGenerating ps = go S.empty (S.fromList . concatMap (extractT . rhs) $ ps) (ps ++ ps) where
+  go :: (Ord nt, Ord t) => S.Set nt -> S.Set t -> Grammar nt t -> S.Set nt
+  go markedNT _ [] = markedNT
+  go markedNT markedT ((Production nt rhs):prs) = if (all (`S.member` markedT) . extractT $ rhs) &&
+                                                     (all (`S.member` markedNT) . extractNonT $ rhs)
+   then go (S.insert nt markedNT) markedT prs else go markedNT markedT prs
 
-eliminateNonGenerating :: Ord nt => Grammar nt t -> Grammar nt t
-eliminateNonGenerating g = undefined
+eliminateNonGenerating :: (Ord nt, Ord t) => Grammar nt t -> Grammar nt t
+eliminateNonGenerating g = cleanGrammar where
+  generating = computeGenerating g
+  cleanProductions = Filterable.filter (`S.member` generating) g
+  cleanGrammar = Prelude.filter (\(Production nt rhs) -> S.member nt generating) cleanProductions
 
-eliminateUseless :: Ord nt => Grammar nt t -> Grammar nt t
+eliminateUseless :: (Ord nt, Ord t) => Grammar nt t -> Grammar nt t
 eliminateUseless = eliminateUnreachable . eliminateNonGenerating
 
-isEmptyGrammar :: (Eq t, Ord nt) => Grammar nt t -> Bool
+isEmptyGrammar :: (Ord t, Ord nt) => Grammar nt t -> Bool
 isEmptyGrammar [] = True
-isEmptyGrammar g = not . elem s $ g' where
+isEmptyGrammar g = not . elem nt . map nonterminal $ g' where
   g' = eliminateNonGenerating g
-  s = head g   
+  (Production nt _) = head g   
       
 extractNonT (NonT nt rhs) = nt : extractNonT rhs
 extractNonT (Term _ rhs) = extractNonT rhs
 extractNonT Empty = []
+
+extractT (Term t rhs) = t : extractT rhs
+extractT (NonT _ rhs) = extractT rhs
+extractT Empty = []
   
 simpleGrammar :: Grammar String String
-simpleGrammar = [a,a',b,c,d,e] where
-  a = Production "A" (Term "a" Empty)
-  a' = Production "A" (NonT "B" Empty)
-  b = Production "B" (NonT "B" (NonT "C" Empty))
-  c = Production "C" (Term "a" (NonT "D" Empty))
-  d = Production "D" (NonT "B" (Term "b" Empty))
-  e = Production "F" Empty
+simpleGrammar = [s,s',b,a,c] where
+  s = Production "S" (NonT "A" (NonT "B" Empty))
+  s' = Production "S" (Term "x" Empty)
+  b = Production "B" (Term "b" Empty)
+  a = Production "A" (Term "a" (NonT "A" Empty))
+  c = Production "C" (Term "d" Empty)
   
 \end{code}
