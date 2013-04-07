@@ -9,7 +9,8 @@ module BadHygiene(computeReachable,
 import ContextFreeGrammar
 import qualified Data.Map as M
 import qualified Data.Set as S
-import Control.Monad.State
+import Filterable
+import Prelude hiding (drop)
 
 computeReachable :: Ord nt => Grammar nt t -> S.Set nt
 computeReachable [] = S.empty
@@ -21,8 +22,10 @@ computeReachable ps = go (S.singleton . nonterminal . head $ ps) (ps ++ ps) wher
     where marked' = S.union marked . S.fromList . extractNonT $ rhs
 
 eliminateUnreachable :: Ord nt => Grammar nt t -> Grammar nt t
-eliminateUnreachable g = undefined where
-  reachable = computeReachable g
+eliminateUnreachable g = cleanGrammar where
+  reachable = computeReachable $ g
+  cleanProductions = Filterable.filter (`S.member` reachable) g
+  cleanGrammar = Prelude.filter (\(Production nt rhs) -> S.member nt reachable) cleanProductions
 
 computeGenerating :: Ord nt => Grammar nt t -> S.Set nt
 computeGenerating g = undefined
