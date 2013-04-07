@@ -22,7 +22,7 @@ A couple helper functions are initially defined, in addition to the grammar toke
 
 \begin{code}
 
-module ScanAndParse where
+module ScanAndParse(sparse) where
 
 import ContextFreeGrammar
 import Data.Char (isUpper,isSpace, isAlphaNum, isAlpha, isDigit)
@@ -92,5 +92,7 @@ parse ((Symbol s):ArrowToken:rhs) =
   (Production s (production)):parse rhs'
 parse ((Symbol s):rhs) = 
   error "Missing arrow or multiple non-terminals on left-hand side."
+
+sparse = parse . scan
 
 \end{code}
