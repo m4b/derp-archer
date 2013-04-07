@@ -18,6 +18,8 @@ Symbol -> LowerSymbol
 
 In other words, non-terminals are restricted to being upper case (in our case, only the first letter needs to be capitalized), terminals are lower case (the first letter), neither can begin with a numeral, and right hand side terminals and non-terminals are delimited by spaces. 
 
+A couple helper functions are initially defined, in addition to the grammar token data structure, which is as follows:
+
 \begin{code}
 
 module ScanAndParse where
@@ -40,7 +42,7 @@ drop' i (x:xs) =
 
 \end{code}
 
-The scanner is a simple function that checks for two special characters, the arrow, {\tt ->} and the newline character, {\tt \\n}, scans symbols for nonterminals or terminals, and returns their appropriate tokens.
+The scanner is a simple function that checks for two special characters, the arrow, {\tt ->} and the newline character, \verb=\n=, scans symbols for nonterminals or terminals, and returns their appropriate tokens.
 
 If a non alphanumeric character is found, the scanner returns an error.
 
@@ -62,7 +64,7 @@ scan s@(c:cs)              =
 
 \end{code}
 
-The parser generates a list of productions, i.e., a ``grammar'', from a list of grammar tokens. The helper function, |parseRHS|, will throw an syntax error if an arrow token is found on the right hand side.
+The parser generates a list of productions, i.e., a ``grammar'', from a list of grammar tokens. The helper function, |parseRHS|, will throw a syntax error if an arrow token is found on the right hand side.
 
 The function |parse| will throw an error if multiple non-terminals occur on the left-hand side, or an arrow is missing.
 
