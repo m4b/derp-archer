@@ -1,47 +1,55 @@
 \begin{code}
-module BadHygiene where
+module BadHygiene(computeReachable,
+                  elminateUnreachable,
+                  computeGenerating,
+                  eliminateNonGenerating,
+                  eliminateUseless,
+                  isEmptyGrammar) where
 
 import ContextFreeGrammar
+import qualified Data.Map as M
 import qualified Data.Set as S
 import Control.Monad.State
 
-reachable :: Ord nt => Grammar nt t -> Grammar nt t
-reachable g = undefined where
-  canReach = sniff g
+computeReachable :: Ord nt => Grammar nt t -> S.Set nt
+computeReachable [] = S.empty
+computeReachable ps = go (S.singleton . nonterminal . head $ ps) (ps ++ ps) where
+  go marked [] = marked
+  go marked ((Production nt rhs):prs) = if S.member nt marked
+                                        then go marked' prs
+                                        else go marked prs
+    where marked' = S.union marked . S.fromList . extractNonT $ rhs
 
+eliminateUnreachable :: Ord nt => Grammar nt t -> Grammar nt t
+eliminateUnreachable g = undefined where
+  reachable = computeReachable g
 
-sniff :: Ord nt => Grammar nt t -> S.Set nt
-sniff ps = snd . execState (while notDone (addNTs ps ps)) $ (S.empty,S.singleton . nonterminal . head $ ps) where
-  notDone :: Ord nt => State (S.Set nt,S.Set nt) Bool
-  notDone = fmap (not . uncurry (==)) get
-  
-  addNTs :: Ord nt => [Production nt t] -> [Production nt t] -> State (S.Set nt, S.Set nt) ()
-  addNTs [] orig = addNTs orig orig
-  addNTs ((Production nt rhs):ps) orig = do
-    (_,s1) <- get
-    when (S.member nt s1) (addAllNonT rhs)
-    
-  addAllNonT :: Ord nt => RHS nt t -> State (S.Set nt,S.Set nt) ()    
-  addAllNonT (NonT nt rhs) = do
-    (s0,s1) <- get
-    unless (S.member nt s1) (put (s1,S.insert nt s1))
-    addAllNonT rhs
-  addAllNonT (Term t rhs) = addAllNonT rhs
-  addAllNonT Empty = return ()
-  
+computeGenerating :: Ord nt => Grammar nt t -> S.Set nt
+computeGenerating g = undefined
 
+eliminateNonGenerating :: Ord nt => Grammar nt t -> Grammar nt t
+eliminateNonGenerating g = undefined
 
-while :: Monad m => m Bool -> m () -> m ()  
-while check action = do
-  b <- check
-  when b (action >> while check action)
+eliminateUseless :: Ord nt => Grammar nt t -> Grammar nt t
+eliminateUseless = eliminateUnreachable . eliminateNonGenerating
+
+isEmptyGrammar :: Ord nt => Grammar nt t -> Bool
+isEmptyGrammar [] = True
+isEmptyGrammar g = not . elem s $ g'where
+  g' = eliminateNonGenerating g
+  s = head g   
+      
+extractNonT (NonT nt rhs) = nt : extractNonT rhs
+extractNonT (Term _ rhs) = extractNonT rhs
+extractNonT Empty = []
   
 simpleGrammar :: Grammar String String
-simpleGrammar = [a,b,c,d,e] where
+simpleGrammar = [a,a',b,c,d,e] where
   a = Production "A" (Term "a" Empty)
-  b = Production "B" (NonT "B" Empty)
-  c = Production "C" (Term "a" (NonT "B" Empty))
-  d = Production "D" (NonT "B" (Term "a" Empty))
+  a' = Production "A" (NonT "B" Empty)
+  b = Production "B" (NonT "B" (NonT "C" Empty))
+  c = Production "C" (Term "a" (NonT "D" Empty))
+  d = Production "D" (NonT "B" (Term "b" Empty))
   e = Production "F" Empty
   
 \end{code}
