@@ -80,27 +80,6 @@ isEmptyGrammar g = not . elem nt . map nonterminal $ g' where
   (Production nt _) = head g   
 
 {-END CLEANING FUNCTIONS-}
-{-BEGIN UTILITY FUNCTIONS-}  
-
-{-|
-  nonTerminals takes the RHS of a Production and
-  returns a list of all Non Terminals
- -}
-nonTerminals :: RHS nt t -> [nt]  
-nonTerminals (NonT nt rhs) = nt : nonTerminals rhs
-nonTerminals (Term _ rhs) = nonTerminals rhs
-nonTerminals Empty = []
-
-{-|
-  terminals takes the RHS of a Production and
-  returns a list of all Terminals
- -}
-terminals :: RHS nt t -> [t]
-terminals (Term t rhs) = t : terminals rhs
-terminals (NonT _ rhs) = terminals rhs
-terminals Empty = []
-
-{-END UTILITY FUNCTIONS-}
  
 {-BEGIN TEST FUNCTIONS-}
 
