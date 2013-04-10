@@ -9,7 +9,7 @@ An |RHS| is either empty, a terminal, which takes two arguments --- the paramate
 \begin{code}
 {-# LANGUAGE FlexibleInstances, MultiParamTypeClasses #-}
 module ContextFreeGrammar
- (Grammar, Production(..), RHS(..), module Dropable) where
+ (Grammar, Production(..), RHS(..), module Dropable, nonTerminals, terminals) where
 
 import Dropable
 import Filterable
@@ -63,6 +63,24 @@ instance Filterable (nt -> Bool) (RHS nt t) where
   filter _ Empty = Empty
   filter pred (Term t rhs) = (Term t (filter pred rhs))
   filter pred (NonT nt rhs) = if pred nt then (NonT nt (filter pred rhs)) else (filter pred rhs)
+  
+{-|
+  nonTerminals takes the RHS of a Production and
+  returns a list of all Non Terminals
+ -}
+nonTerminals :: RHS nt t -> [nt]  
+nonTerminals (NonT nt rhs) = nt : nonTerminals rhs
+nonTerminals (Term _ rhs) = nonTerminals rhs
+nonTerminals Empty = []
+
+{-|
+  terminals takes the RHS of a Production and
+  returns a list of all Terminals
+ -}
+terminals :: RHS nt t -> [t]
+terminals (Term t rhs) = t : terminals rhs
+terminals (NonT _ rhs) = terminals rhs
+terminals Empty = []
 
 simpleGrammar :: Grammar String String
 simpleGrammar = [a,b,c,d] where
