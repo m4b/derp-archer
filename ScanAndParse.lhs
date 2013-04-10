@@ -12,11 +12,11 @@ Production -> UpperSymbol Arrow RHS
 RHS -> RHS Symbol
 RHS ->
 Symbol -> UpperSymbol
-Symbol -> LowerSymbol
+Symbol -> AlphaNumSymbol
 
 \end{verbatim}
 
-In other words, non-terminals are restricted to being upper case (in our case, only the first letter needs to be capitalized), terminals are lower case (the first letter), neither can begin with a numeral, and right hand side terminals and non-terminals are delimited by spaces. 
+In other words, non-terminals are restricted to their first letter being upper case, terminals are sequences of alphanumeric characters where the first character cannot be upper-case, and right hand side terminals and non-terminals are delimited by spaces. 
 
 A couple helper functions are initially defined, in addition to the grammar token data structure, which is as follows:
 
@@ -53,12 +53,10 @@ scan []                    = []
 scan ('-':'>':cs)          = ArrowToken:scan cs
 scan ('\n':cs)             = NewLineToken:scan cs
 scan (c:cs) | isSpace c    = scan cs
-scan s@(c:cs) | isAlpha c  = 
+scan s@(c:cs) | isAlphaNum c  = 
   let name = alphanumeric s
       len  = length name in
         (Symbol name):scan (drop' len s)
-scan s@(c:cs) | isDigit c  = 
-  error "lexical error; symbols cannot begin with numerals."
 scan s@(c:cs)              = 
   error ("lexical error; " ++ c:" is an unrecognized character.")
 
