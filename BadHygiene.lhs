@@ -21,7 +21,7 @@ import Test.HUnit
  -}  
 computeReachable :: Ord nt => Grammar nt t -> S.Set nt
 computeReachable [] = S.empty
-computeReachable ps = go (S.singleton . nonterminal . head $ ps) (ps ++ ps) where
+computeReachable ps = go (S.singleton . nonterminal . head $ ps) (concat . replicate (length ps) $ ps) where
   go marked [] = marked
   go marked ((Production nt rhs):prs) = if S.member nt marked
                                         then go marked' prs
@@ -46,7 +46,7 @@ eliminateUnreachable g = cleanGrammar where
  -}
 computeGenerating :: (Ord nt, Ord t) => Grammar nt t -> S.Set nt
 computeGenerating [] = S.empty
-computeGenerating ps = go S.empty (S.fromList . concatMap (terminals . rhs) $ ps) (ps ++ ps) where
+computeGenerating ps = go S.empty (S.fromList . concatMap (terminals . rhs) $ ps) (concat . replicate (length ps) $ ps) where
   go markedNT _ [] = markedNT
   go markedNT markedT ((Production nt rhs):prs) = if (all (`S.member` markedT) . terminals $ rhs) &&
                                                      (all (`S.member` markedNT) . nonTerminals $ rhs)
