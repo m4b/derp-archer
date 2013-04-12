@@ -1,7 +1,7 @@
 A -> a
 B -> b
-C -> aD
-D -> BCA
+C -> a D
+D -> B C A
 B -> 
 B -> C
 C -> B
