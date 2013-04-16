@@ -9,13 +9,16 @@ An |RHS| is either empty, a terminal, which takes two arguments --- the paramate
 \begin{code}
 {-# LANGUAGE FlexibleInstances, MultiParamTypeClasses #-}
 module ContextFreeGrammar
- (Grammar, Production(..), RHS(..), module Dropable, nonTerminals, terminals) where
+ (Grammar, Production(..), RHS(..), module Dropable, 
+ nonTerminals, terminals, Terminal(..)) where
 
 import Dropable
 import Filterable
 import Prelude hiding(drop, filter)
 
 type Grammar nt t = [Production nt t]
+
+data Terminal t = Epsilon | EOF | Terminal t deriving (Show, Eq, Ord)
 
 instance (Eq nt) => Dropable nt (Grammar nt t) where
   drop x grammar = map (drop x) grammar

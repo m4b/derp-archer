@@ -7,17 +7,13 @@ import Control.Monad.State
 import qualified Data.Map as M
 import Data.Maybe
 import qualified Data.Set as S
+import First
 import Nullable
-
-data Terminal t = Epsilon | EOF | Terminal t deriving (Show, Eq, Ord)
 
 data GrammarState nt t = GS {
   grammar :: Grammar nt t,
-  firsts :: M.Map nt (S.Set (Maybe t))
+  firsts :: M.Map nt (S.Set (Terminal t))
 }
-
-first :: (Ord nt, Ord t) => Grammar nt t -> M.Map nt (S.Set (Maybe t))
-first = error "First is undefined and must be imported from another module."
 
 follow :: (Ord nt, Ord t) => Grammar nt t -> M.Map nt (S.Set (Terminal t))
 follow [] = M.empty
@@ -29,14 +25,7 @@ follow' :: (Ord nt, Ord t) => Grammar nt t -> Production nt t -> (nt,S.Set (Term
 follow' g (Production a rhs) = (a,undefined) where
   xs = getProductionsWith a g
   firsts = first g
-  
-{--computeFollow :: (Ord nt, Ord t) => nt -> Production nt t -> S.Set (Terminal t)
-computeFollow a x@(Production nt rhs) = undefined where
-  rest = after a rhs
-  fllwrest = case rest of
-               Empty -> snd . --}
-               
-               
+
 follow'' :: (Ord nt, Ord t) => nt -> State (GrammarState nt t) (S.Set (Terminal t))
 follow'' a = do
   g <- gets grammar
@@ -47,13 +36,13 @@ follow'' a = do
               Empty -> follow'' x
               NonT b _ -> do
                 let firstb = fs M.! b
-                case S.member Nothing firstb of
+                case S.member Epsilon firstb of
                   True -> do
                     folb <- follow'' b
-                    let fb2 = S.delete Nothing firstb
-                    return $ S.union folb (S.map (Terminal . fromJust) fb2)
-                  False -> return (S.map (Terminal . fromJust) firstb)
-              Term t _ -> return . S.singleton $ Terminal t
+                    let fb2 = S.delete Epsilon firstb
+                    return $ S.union folb fb2
+                  False -> return firstb
+              Term t _ -> return . S.singleton . Terminal $ t
   return . S.unions $ sets
     
 
