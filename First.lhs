@@ -1,6 +1,5 @@
 \begin{code}
-module First where
-
+module First(first) where
 import ContextFreeGrammar
 import Control.Applicative
 import Control.Monad
