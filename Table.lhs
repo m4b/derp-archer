@@ -38,7 +38,7 @@ getFeature feature productions = loop productions []
 -- need to generate S' \(\to\) S\$
 getNewStart [] = error "getNewStart run on empty grammar --- a new low point"
 getNewStart (Production nt rhs:ps) = 
-            Production (nt ++ "PRIME") (NonT nt (Term "$" Empty))
+            Production (nt ++ "'") (NonT nt (Term "$" Empty))
 
 
 isRHSNullable :: Ord a => S.Set a -> RHS a t -> Bool
@@ -50,7 +50,7 @@ isRHSNullable m (NonT nt rhs) =
               else False
 
 firstRHS _ Empty = S.empty
-firstRHS i (Term t rhs) = S.insert t (firstRHS i rhs)
+firstRHS i (Term t rhs) = S.insert (Terminal t) (firstRHS i rhs)
 firstRHS i (NonT nt rhs) = 
          if (S.member nt (nulls i)) then 
             S.union firstsnt (firstRHS i rhs)
@@ -71,11 +71,13 @@ A production N \(\to \alpha \) is in the table (N,\emph a) \emph{iff} \emph a is
 
 \begin{code}
 
+
+
 validEntry (Production _ alpha) term nterm gi = firstalpha || (nullablea && follown)
   where 
-        firstalpha = S.member term (firstRHS gi alpha)
+        firstalpha = S.member (term) (firstRHS gi alpha)
         nullablea = isRHSNullable (nulls gi) alpha
-        follown = S.member term ((follows gi) M.! nterm)
+        follown = S.member (term) ((follows gi) M.! nterm)
 
 toTerminal [] = []
 toTerminal ("$":ss) = EOF:toTerminal ss
@@ -91,14 +93,13 @@ columns p t (nt:nts) gi =
      if validEntry p t nt gi then
         (t,p):(columns p t (nts) gi)
      else
-        columns p t (nts) gi
+        columns p t nts gi
 
 rows p [] nts gi = []
 rows p (t:ts) nts gi = (columns p t nts gi):(rows p ts nts gi)
 
 buildTable' [] terms nterms gi = []
-buildTable' (p:ps) terms nterms gi = undefined
---  ((rows p terms nterms gi)):buildTable' ps terms nterms gi
+buildTable' (p:ps) terms nterms gi = (concat (rows p terms nterms gi)):buildTable' ps terms nterms gi
 
 buildTable grammar = 
            let grammar' = (getNewStart grammar) : grammar in
@@ -106,7 +107,7 @@ buildTable grammar =
            let nterms = getFeature nonTerminals grammar' in
            let gi = GI (first grammar') (follow grammar') (nullable grammar') in
            let table = buildTable' grammar' terms nterms gi in
-           table
+           concat table
 
 man = do
  contents <- readFile "tests/39.txt"
@@ -119,4 +120,6 @@ man = do
  putStrLn $ show (getFeature terminals g')
  putStrLn $ show (getFeature nonTerminals g')
  putStrLn $ show gi
+ putStrLn ""
+ putStrLn . show . buildTable $ g
 \end{code}
