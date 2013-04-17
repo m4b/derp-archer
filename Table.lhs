@@ -28,20 +28,12 @@ foo1 = [a,b,c,d] where
   c = Production "C" (Term "a" (NonT "B" Empty))
   d = Production "D" (NonT "B" (Term "a" Empty))
 
---getTerminals :: Ord t => Grammar nt t -> [t]
---getTerminals productions = sort . nub . (concatMap terminals) $ productions
 
 getFeature feature productions = loop productions []
           where 
-            loop [] acc = sort. nub . concat $ acc
+            loop [] acc = sort . nub . concat $ acc
             loop ((Production s rhs):xs) acc = loop xs ((feature rhs):acc)
 
-
---M.fromList :: Ord k => [(k, a)] -> M.Map k a
---M.fromListWith :: Ord k => (a -> a -> a) -> [(k, a)] -> M.Map k a
-
-
---buildTable :: Grammar nt t -> Table nt t
 buildTable grammar = 
            let terms = getFeature terminals grammar in
            let nterms = getFeature nonTerminals grammar in
