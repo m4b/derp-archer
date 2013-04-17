@@ -1,3 +1,7 @@
+\subsection{Follow}
+
+In this section, we implement a function |follow| which calculates the follow set for our data structure of production grammars.
+
 \begin{code}
 {-# LANGUAGE ViewPatterns #-}
 module Follow where
@@ -21,12 +25,14 @@ follow g@((Production nt rhs):ps) = M.adjust (S.insert EOF) nt fMap where
   fMap = M.fromList $ zip (map nonterminal g) sets
   sets = evalState (mapM (follow'' . nonterminal) g) (GS g (first g))
 
-follow' :: (Ord nt, Ord t) => Grammar nt t -> Production nt t -> (nt,S.Set (Terminal t))
+follow' :: (Ord nt, Ord t) => 
+        Grammar nt t -> Production nt t -> (nt,S.Set (Terminal t))
 follow' g (Production a rhs) = (a,undefined) where
   xs = getProductionsWith a g
   firsts = first g
 
-follow'' :: (Ord nt, Ord t) => nt -> State (GrammarState nt t) (S.Set (Terminal t))
+follow'' :: (Ord nt, Ord t) => 
+         nt -> State (GrammarState nt t) (S.Set (Terminal t))
 follow'' a = do
   g <- gets grammar
   fs <- gets firsts

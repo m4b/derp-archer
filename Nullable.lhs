@@ -1,3 +1,7 @@
+\subsection{Nullable}
+
+Here we compute whether a production is nullable or not.
+
 \begin{code}
 
 module Nullable(nullable) where

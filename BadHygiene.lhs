@@ -18,10 +18,13 @@ import ScanAndParse
 
 {-BEGIN CLEANING FUNCTIONS-}
 
-{-| 
-  computeReachable finds the Set of all Non Terminals of a Grammar that
+\end{code}
+
+  |computeReachable| finds the Set of all Non Terminals of a Grammar that
   can be reached from the start node.
- -}  
+
+\begin{code}
+
 computeReachable :: Ord nt => Grammar nt t -> S.Set nt
 computeReachable [] = S.empty
 computeReachable ps = go (S.singleton . nonterminal . head $ ps) (concat . replicate (length ps) $ ps) where
@@ -31,10 +34,13 @@ computeReachable ps = go (S.singleton . nonterminal . head $ ps) (concat . repli
                                         else go marked prs
     where marked' = S.union marked . S.fromList . nonTerminals $ rhs
 
-{-|
-  eliminateUnreachable removes all unreachable Non Terminals from
+\end{code}
+
+  |eliminateUnreachable| removes all unreachable Non Terminals from
   a Grammar.
- -}
+
+\begin{code}
+
 eliminateUnreachable :: Ord nt => Grammar nt t -> Grammar nt t
 eliminateUnreachable g = cleanGrammar where
   reachable = computeReachable $ g
@@ -43,10 +49,12 @@ eliminateUnreachable g = cleanGrammar where
   --cleanProductions = Filterable.filter (`S.member` reachable) g
   cleanGrammar = Prelude.filter (\(Production nt rhs) -> S.member nt reachable) g
 
-{-|
-  computeGenerating finds the Set of all Non Terminals of a Grammar
+\end{code}
+
+  |computeGenerating| finds the Set of all Non Terminals of a Grammar
   that can produce a string of Terminals.
- -}
+
+\begin{code}
 computeGenerating :: (Ord nt, Ord t) => Grammar nt t -> S.Set nt
 computeGenerating [] = S.empty
 computeGenerating ps = go S.empty (concat . replicate (length ps) $ ps) where
@@ -56,28 +64,35 @@ computeGenerating ps = go S.empty (concat . replicate (length ps) $ ps) where
                                              (all (`S.member` markedNT) . nonTerminals $ rhs)
                                           then go (S.insert nt markedNT) prs 
                                           else go markedNT prs
+\end{code}
 
-{-|
-  eliminateNonGenerating removes all non Generating Non Terminals from
+  |eliminateNonGenerating| removes all non Generating Non Terminals from
   a Grammar.
- -}
+
+\begin{code}
+
 eliminateNonGenerating :: (Ord nt, Ord t) => Grammar nt t -> Grammar nt t
 eliminateNonGenerating g = cleanGrammar where
   generating = computeGenerating g
   cleanProductions = Filterable.filter (`S.member` generating) g
   cleanGrammar = Prelude.filter (\(Production nt rhs) -> S.member nt generating) cleanProductions
 
-{-|
-  eliminateUseless removes all non Generating and unreachable Non Terminals
+\end{code}
+
+  |eliminateUseless| removes all non Generating and unreachable Non Terminals
   from a Grammar.
- -}
+
+\begin{code}
 eliminateUseless :: (Ord nt, Ord t) => Grammar nt t -> Grammar nt t
 eliminateUseless = eliminateUnreachable . eliminateNonGenerating
 
-{-|
-  isEmptyGrammar determines if a Grammar will produce any strings
+\end{code}
+
+  |isEmptyGrammar| determines if a Grammar will produce any strings
   at all.
- -}
+
+\begin{code}
+
 isEmptyGrammar :: (Ord t, Ord nt) => Grammar nt t -> Bool
 isEmptyGrammar [] = True
 isEmptyGrammar g = not . elem nt . map nonterminal $ g' where

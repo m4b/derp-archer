@@ -5,6 +5,10 @@ module Test (     runTests,
                   doTestsPass) where
 
 import Test.HUnit
+import ContextFreeGrammar
+import qualified Data.Set as S
+import Filterable
+import ScanAndParse
 import BadHygiene
 
 testComputeReachable1 = makeTest "testComputeReachable1" "for computeReachable" e a where
