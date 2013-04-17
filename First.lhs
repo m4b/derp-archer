@@ -1,3 +1,7 @@
+\subsection{First}
+
+In this section, we compute the first set for a context-free grammar.
+
 \begin{code}
 module First(first) where
 
@@ -36,7 +40,7 @@ and returned at the end of a call to first.
 It also stores the set of Non-terminals which
 are nullable.
 
-\begin{code}  
+\begin{code}
   
 data FirstState nt t = FS {
   firsts :: M.Map nt (S.Set (Terminal t)),
@@ -55,7 +59,7 @@ in the implicit FirstState.
 \begin{code}
 
 first' :: (Ord nt, Ord t) => Production nt t -> Environment nt t ()
-first' (Production nt _) = do
+first' (Production nt rhs) = do
   fs <- get
   let mp = firsts fs
   case rhs of
