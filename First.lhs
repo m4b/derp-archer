@@ -1,7 +1,7 @@
 \begin{code}
 module First(first) where
+
 import ContextFreeGrammar
-import Control.Applicative
 import Control.Monad
 import Control.Monad.State
 import Data.Functor
