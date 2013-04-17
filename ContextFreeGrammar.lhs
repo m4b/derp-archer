@@ -65,21 +65,22 @@ instance (Eq nt) => Dropable nt (RHS nt t) where
 instance Filterable (nt -> Bool) (RHS nt t) where
   filter _ Empty = Empty
   filter pred (Term t rhs) = (Term t (filter pred rhs))
-  filter pred (NonT nt rhs) = if pred nt then (NonT nt (filter pred rhs)) else (filter pred rhs)
+  filter pred (NonT nt rhs) = 
+         if pred nt then (NonT nt (filter pred rhs)) else (filter pred rhs)
   
-{-|
+\end{code}
   nonTerminals takes the RHS of a Production and
   returns a list of all Non Terminals
- -}
+\begin{code}
 nonTerminals :: RHS nt t -> [nt]  
 nonTerminals (NonT nt rhs) = nt : nonTerminals rhs
 nonTerminals (Term _ rhs) = nonTerminals rhs
 nonTerminals Empty = []
 
-{-|
+\end{code}
   terminals takes the RHS of a Production and
   returns a list of all Terminals
- -}
+\begin{code}
 terminals :: RHS nt t -> [t]
 terminals (Term t rhs) = t : terminals rhs
 terminals (NonT _ rhs) = terminals rhs

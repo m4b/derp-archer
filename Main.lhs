@@ -28,12 +28,29 @@
 
 \maketitle
 
+\section{Introduction}
+
+This report contains our implementation of a scanner and parser for context free grammars, a series of hygiene functions for sterilizing the grammar, and finally a parser \emph{for} the grammar specified in the context free grammar.
+
+It is divided up into several sections, roughly corresponding to the problems given in the specification, each a Haskell module.  The work was split up evenly amongst the group members, and approximately 40 man hours went into the final preparation of this document, the source code, unit testing, and related work.
+
 %include ContextFreeGrammar.lhs
 %include ScanAndParse.lhs
+%include BadHygiene.lhs
+
+\section{Nullable, First, and Follow}
+
+In this section, we provide several modules for computing the nullable, first and follow sets of a given context free grammar, respectively.
+
+%include Nullable.lhs
+%include First.lhs
+%include Follow.lhs
+
+%include Table.lhs
 
 \section{Main module}
 
-The main module puts everything together, takes an textual representation of a context-free grammar as input, scans, parses, and performs the rest of the duties that are required.
+The main module puts everything together, takes a textual representation of a context-free grammar as input, scans, parses, and performs the rest of the duties that are required.
 
 \begin{code}
 
@@ -46,9 +63,14 @@ import BadHygiene
 import System.Environment
 
 main = do 
-     [file] <- getArgs
-     contents <- readFile file
-     putStrLn $ show contents
+--     [file] <- getArgs
+--     contents <- readFile file
+     contents <- readFile "tests/39.txt"
+--     contents <- readFile "tests/ir.txt"
+     let g = sparse contents
+     let g' = eliminateUseless . sparse $ contents    
+     putStrLn $ show g
+     putStrLn $ show g'
 
 \end{code}
 

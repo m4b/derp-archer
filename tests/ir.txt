@@ -3,4 +3,48 @@ Program -> Instructions
 Instructions -> Instruction comma Instructions
 Instructions -> Instruction
 
-Instruction -> 
+Instruction -> label LabelID
+
+LabelID -> Character LabelID
+LabelID -> Character
+
+Character -> a
+Character -> b
+Character -> c
+Character -> d
+Character -> e
+Character -> f
+Character -> g
+Character -> h
+Character -> i
+Character -> j
+Character -> k
+Character -> l
+Character -> m
+Character -> n
+Character -> o
+Character -> p
+Character -> q
+Character -> r
+Character -> s
+Character -> t
+Character -> u
+Character -> v
+Character -> w
+Character -> x
+Character -> y
+Character -> z
+
+Number -> Digit Number
+Number -> Digit
+
+Digit -> 0
+Digit -> 1
+Digit -> 2
+Digit -> 3
+Digit -> 4
+Digit -> 5
+Digit -> 6
+Digit -> 7
+Digit -> 8
+Digit -> 9
