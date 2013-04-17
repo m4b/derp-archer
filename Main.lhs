@@ -59,6 +59,7 @@ module Main where
 import ContextFreeGrammar
 import ScanAndParse
 import BadHygiene
+import Table
 
 import System.Environment
 
