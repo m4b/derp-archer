@@ -61,20 +61,21 @@ parseTableAString =
      "      Nothing -> False\n" ++ 
      "      Just (Production _ rhs) -> parse' (rhsToList rhs ++ rest) s\n" ++
      "    | c == head top = parse' rest cs\n" ++
-     "    | otherwise = parse' rest s\n"
+     "    | otherwise = False\n"
                
 
-tableA = M.fromList [(("R","b"),[Production {nonterminal = "R", rhs = NonT "R" (Term "b" (NonT "R" Empty))},Production {nonterminal = "R", rhs = Empty}]),(("R","c"),[Production {nonterminal = "R", rhs = Empty}]),(("T","a"),[Production {nonterminal = "T", rhs = Term "a" (NonT "T" (Term "c" Empty))}]),(("T","b"),[Production {nonterminal = "T", rhs = NonT "R" Empty}]),(("T","c"),[Production {nonterminal = "T", rhs = NonT "R" Empty}])]
+tableA = M.fromList [(("R","$"),[Production {nonterminal = "R", rhs = Empty}]),(("R","b"),[Production {nonterminal = "R", rhs = NonT "R" (Term "b" (NonT "R" Empty))},Production {nonterminal = "R", rhs = Empty}]),(("R","c"),[Production {nonterminal = "R", rhs = Empty}]),(("T","$"),[Production {nonterminal = "T", rhs = NonT "R" Empty}]),(("T","a"),[Production {nonterminal = "T", rhs = Term "a" (NonT "T" (Term "c" Empty))}]),(("T","b"),[Production {nonterminal = "T", rhs = NonT "R" Empty}]),(("T","c"),[Production {nonterminal = "T", rhs = NonT "R" Empty}]),(("T'","$"),[Production {nonterminal = "T'", rhs = NonT "T" (Term "$" Empty)}]),(("T'","a"),[Production {nonterminal = "T'", rhs = NonT "T" (Term "$" Empty)}]),(("T'","b"),[Production {nonterminal = "T'", rhs = NonT "T" (Term "$" Empty)}])]
 
 parseWithTableA start t s = parse' [start] s where
   parse' [] cs = True
+  parse' _ []  = False
   parse' st@(top:rest) s@(c:cs)
     | isUpper (head top) = case M.lookup (top,[c]) t of
       Nothing -> False
       Just [Production _ rhs] -> parse' (rhsToList rhs ++ rest) s
       Just ps -> or . map (helper rest s) $ ps
     | c == head top = parse' rest cs
-    | otherwise = parse' rest s
+    | otherwise = False
   helper rest str (Production _ rhs) = parse' (rhsToList rhs ++ rest) str 
 
 rhsToList :: RHS String String -> [String]
