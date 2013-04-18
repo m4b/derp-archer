@@ -7,20 +7,21 @@ In this section we generate a parse table for a given grammar, assuming it has b
 module Table where
 
 import ContextFreeGrammar
+
 import Filterable
 import Nullable
 import First
 import Follow
 import System.Environment
 
-import Data.List
+import Data.List as L
 import qualified Data.Map as M
 import qualified Data.Set as S
 
 import ScanAndParse
 import BadHygiene
 
-type Table nt t = M.Map nt (M.Map t (Production nt t))
+type Table = M.Map (String,String) (Production String String)
 
 foo1 :: Grammar String String
 foo1 = [a,b,c,d] where
@@ -36,9 +37,10 @@ getFeature feature productions = loop productions []
             loop ((Production s rhs):xs) acc = loop xs ((feature rhs):acc)
 
 -- need to generate S' \(\to\) S\$
+getNewStart :: Grammar String String -> Grammar String String
 getNewStart [] = error "getNewStart run on empty grammar --- a new low point"
-getNewStart (Production nt rhs:ps) = 
-            Production (nt ++ "'") (NonT nt (Term "$" Empty))
+getNewStart g@(Production nt rhs:ps) = 
+            (Production (nt ++ "'") (NonT nt (Term "$" Empty))):g
 
 
 isRHSNullable :: Ord a => S.Set a -> RHS a t -> Bool
@@ -50,7 +52,7 @@ isRHSNullable m (NonT nt rhs) =
               else False
 
 firstRHS _ Empty = S.empty
-firstRHS i (Term t rhs) = S.insert (Terminal t) (firstRHS i rhs)
+firstRHS i (Term t rhs) = S.singleton t
 firstRHS i (NonT nt rhs) = 
          if (S.member nt (nulls i)) then 
             S.union firstsnt (firstRHS i rhs)
@@ -58,10 +60,10 @@ firstRHS i (NonT nt rhs) =
             firstsnt
   where firstsnt = ((firsts i) M.! nt)
 
-data GrammarInfo nt t= GI {
-  firsts :: M.Map nt (S.Set (Terminal t)),
-  follows :: M.Map nt (S.Set (Terminal t)),
-  nulls :: S.Set nt
+data GrammarInfo = GI {
+  firsts :: M.Map String (S.Set String),
+  follows :: M.Map String (S.Set String),
+  nulls :: S.Set String
 } deriving Show
 
 
@@ -72,54 +74,55 @@ A production N \(\to \alpha \) is in the table (N,\emph a) \emph{iff} \emph a is
 \begin{code}
 
 
-
-validEntry (Production _ alpha) term nterm gi = firstalpha || (nullablea && follown)
+validEntry gi (Production nterm alpha) term = firstalpha || (nullablea && follown)
   where 
         firstalpha = S.member (term) (firstRHS gi alpha)
         nullablea = isRHSNullable (nulls gi) alpha
         follown = S.member (term) ((follows gi) M.! nterm)
 
+\end{code}
+
+We'll also need some conversion from the Terminal data types used by the first and follow functions:
+
+\begin{code}
+
 toTerminal [] = []
 toTerminal ("$":ss) = EOF:toTerminal ss
 toTerminal (s:ss) = Terminal s:toTerminal ss
 
+fromTerminal' :: Terminal String -> String
 fromTerminal' Epsilon      = ""
 fromTerminal' EOF          = "$"
 fromTerminal' (Terminal t) = t
-fromTerminalSet ts = map fromTerminal' $ S.toList ts
+fromTerminalSet ts = S.map fromTerminal' ts
 
-columns p t [] gi =  []
-columns p t (nt:nts) gi = 
-     if validEntry p t nt gi then
-        (t,p):(columns p t (nts) gi)
-     else
-        columns p t nts gi
+\end{code}
 
-rows p [] nts gi = []
-rows p (t:ts) nts gi = (columns p t nts gi):(rows p ts nts gi)
+Lastly, we build a table for an LL(1) parser, returning nothing if there is more than one production per entry in the table.
 
-buildTable' [] terms nterms gi = []
-buildTable' (p:ps) terms nterms gi = (concat (rows p terms nterms gi)):buildTable' ps terms nterms gi
+\begin{code}
+
+buildTable' :: GrammarInfo -> Grammar String String -> [String] -> Table -> Maybe Table
+buildTable' _ [] _ acc = Just acc 
+buildTable' gi (p@(Production nt _):ps) terms acc = case fromList acc kvs of
+  Nothing -> Nothing 
+  Just a -> buildTable' gi ps terms a
+  where
+    valids = 
+           map fst . L.filter snd . map (\t -> (t,validEntry gi p t)) $ terms
+    kvs = map (\v -> ((nt,v),p)) valids
+
+fromList :: Table -> 
+         [((String,String),Production String String)] -> Maybe Table
+fromList acc [] = Just acc
+fromList acc ((k@(nt,t),p):ks) = case M.lookup k acc of
+  Nothing -> fromList (M.insert k p acc) ks
+  Just _ -> Nothing
 
 buildTable grammar = 
-           let grammar' = (getNewStart grammar) : grammar in
-           let terms = toTerminal . getFeature terminals $ grammar' in
-           let nterms = getFeature nonTerminals grammar' in
-           let gi = GI (first grammar') (follow grammar') (nullable grammar') in
-           let table = buildTable' grammar' terms nterms gi in
-           concat table
+           let terms = getFeature terminals grammar in
+           let gi = GI (M.map fromTerminalSet $ first grammar) (M.map fromTerminalSet $ follow grammar) (nullable grammar) in
+           let table = buildTable' gi grammar terms M.empty in
+           table
 
-man = do
- contents <- readFile "tests/39.txt"
- let g = sparse contents
- let g' = eliminateUseless . sparse $ contents    
- let gnull = nullable. sparse $ contents    
- let gfollow = follow . sparse $ contents    
- let gfirst = first . sparse $ contents
- let gi = GI gfirst gfollow gnull
- putStrLn $ show (getFeature terminals g')
- putStrLn $ show (getFeature nonTerminals g')
- putStrLn $ show gi
- putStrLn ""
- putStrLn . show . buildTable $ g
 \end{code}

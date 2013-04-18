@@ -27,13 +27,7 @@ instance Filterable (nt -> Bool) (Grammar nt t) where
   filter pred grammar = map (filter pred) grammar
 
 data Production nt t = Production {nonterminal :: nt,
-                                   rhs         :: RHS nt t} deriving (Eq, Ord)
-
-instance Show (Production String String) where
-  show (Production nt rhs) = nt ++ " ->" ++ show rhs
-
-instance Show (Production Char Char) where
-  show (Production nt rhs) = show nt ++ " -> " ++ show rhs
+                                   rhs         :: RHS nt t} deriving (Eq, Ord, Show)
 
 instance (Eq nt) => Dropable nt (Production nt t) where
   drop x (Production nt rhs) = Production nt (drop x rhs)
@@ -43,17 +37,8 @@ instance Filterable (nt -> Bool) (Production nt t) where
 
 data RHS nt t = Empty
               | Term t (RHS nt t)
-              | NonT nt (RHS nt t) deriving (Eq, Ord)
+              | NonT nt (RHS nt t) deriving (Eq, Ord, Show)
 
-instance Show (RHS String String) where
-  show Empty = ""
-  show (Term t rhs) = " " ++ t ++ (show rhs)
-  show (NonT nt rhs) = " " ++ nt ++ (show rhs)
-
-instance Show (RHS Char Char) where
-  show Empty = ""
-  show (Term t rhs) = show t ++ (show rhs)
-  show (NonT nt rhs) = show nt ++ (show rhs)
 
 instance (Eq nt) => Dropable nt (RHS nt t) where
   drop x (NonT nt rhs) 
