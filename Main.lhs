@@ -73,8 +73,9 @@ main = do
      let grammar' = eliminateUseless . getNewStart $ grammar
      let table = buildTable grammar'
      case table of 
-          Nothing -> error "Not done"
-          Just t -> generateStrong grammar' t
+          Nothing -> putStrLn . show $ buildTableA grammar'
+          Just t -> 
+                generateStrong grammar' t
 
 
 \end{code}

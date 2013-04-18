@@ -125,4 +125,30 @@ buildTable grammar =
            let table = buildTable' gi grammar terms M.empty in
            table
 
+-- an ambiguous table
+type TableA = M.Map (String, String) ([Production String String])
+
+fromListA :: TableA -> 
+         [((String,String),Production String String)] -> TableA
+fromListA acc [] = acc
+fromListA acc ((k@(nt,t),p):ks) = case M.lookup k acc of
+  Nothing -> fromListA (M.insert k [p] acc) ks
+  Just _ -> fromListA (M.adjust (p:) k acc) ks
+
+buildTableA' :: GrammarInfo -> Grammar String String -> [String] -> TableA -> TableA
+buildTableA' _ [] _ acc = acc 
+buildTableA' gi (p@(Production nt _):ps) terms acc =
+     buildTableA' gi ps terms (fromListA acc kvs)
+       where
+        valids = 
+               map fst . L.filter snd . map (\t -> (t,validEntry gi p t)) $ terms
+        kvs = map (\v -> ((nt,v),p)) valids
+
+buildTableA grammar =
+           let terms = getFeature terminals grammar in
+           let gi = GI (M.map fromTerminalSet $ first grammar) (M.map fromTerminalSet $ follow grammar) (nullable grammar) in
+           let table = buildTableA' gi grammar terms M.empty in
+           table
+            
+
 \end{code}
