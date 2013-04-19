@@ -1,0 +1,41 @@
+Element -> IDF
+Element -> IDF l Parameters r
+Element -> IDF lbracket Indexes rbracket
+
+Parameters -> Num
+Parameters -> Num comma Parameters
+
+Indexes -> Num
+Indexes -> Num comma Indexes
+
+Digit -> 0
+Digit -> 1
+Digit -> 2
+Digit -> 3
+Digit -> 4
+Digit -> 5
+Digit -> 6
+Digit -> 7
+Digit -> 8
+Digit -> 9
+
+Num -> Digit Num
+
+Num -> 
+
+IDF -> String
+
+String -> Char String
+String -> 
+
+Char -> a
+Char -> b
+Char -> c
+Char -> d
+Char -> e
+Char -> f
+Char -> s
+Char -> i
+Char -> n
+Char -> l
+Char -> r
