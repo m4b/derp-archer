@@ -4,8 +4,25 @@ In this section we provide a simple table-driven parser function, |parseWithTabl
 
 Since we are just creating a parser, but do not know the intended use of the parser, we decided to simply return a boolean.  If necessary, it could be easily modified for other accomodations.
 n
-Lastly, we decided to emit Haskell code as a module, to run on a given text file as input for that the context free grammar it was generated for.
+Lastly, we decided to emit Haskell code as a module for either strong LL(1) or non strong LL(1) parsers, to run on a given text file as input for that the context free grammar it was generated for.
 
+For the strong LL(1) case, our parser behaves as required.  The more interesting problem was writing, in Haskell, a parser for non strong LL(1) grammers which attempt to parse in the LL(1) manner, and ``dynamically detect'' if the grammar isn't even LL(1).
+
+Our solution ended up being a ``minor'' modification of the strong LL(1) parser; we decided that the necessary behavior for parsing a non-deterministic choice in the table was to essentially map the parser over the list, and then take the union of the solutions that the parsers recursively return.
+
+In other words, we try all the cases, or as the handout stated: ``if we have no means to decide which right-hand side to select, we have to try them all.''
+
+Surprisingly, by changing the helper function slightly for checking whether the leftmost symbol on the right hand side of a production matches the production rule (i.e., whether it was left recursive or not), we were able to parse a whole new class of grammars which caused our program to loop infinitely before.
+
+In the end, our implementation for non-strong LL(1) parsers emits a module which marks it as non strong, and parses, if it has to, in a LL(k) manner.  We would have liked to have written a parser that failed, or was unable to perform for idiosyncratic grammars, but we didn't have the time to complete this portion.
+
+Another interesting feature, would have been to check \emph{how} more than one entry was added to the table.  In other words, which portion of this logical statement were false: a production N \(\to \alpha \) is in the table (N,\emph a) \emph{iff} \emph a is in first(\(\alpha\)) \(\lor\) (nullable(\(\alpha\)) \(\land\) \emph a is in follow(\(\alpha\))).
+
+There are three possible ways it can be made false: the left disjunct is false, and the left conjunct is false; the left disjunct is false, and the right conjunct is false; and the left disjunct is false and both conjuncts in the conjunction are false.
+
+These three different possibilities correspond to bullet points on pg. 248 of the handout, and give hints at how to ``dynamically'' detect features about the given grammar.
+
+Lastly, it would have been better for us to write actual functions which directly eliminate left recursion, and perform left factorization, rather than implementing these features dynamically, but we simply didn't have the time.
 
 \begin{code}
 
@@ -39,7 +56,7 @@ parseWithTableString =
      "      Nothing -> False\n" ++ 
      "      Just (Production _ rhs) -> parse' (rhsToList rhs ++ rest) s\n" ++
      "    | c == head top = parse' rest cs\n" ++
-     "    | otherwise = parse' rest s\n"
+     "    | otherwise = False\n"
 
 
 generateStrong grammar table = do
@@ -51,7 +68,9 @@ generateStrong grammar table = do
                putStrLn . show $ table
                putStrLn parseWithTableString
                putStrLn rhsString
-               putStr $ "parse s = parseWithTable " ++ "\"" ++ (getStart grammar) ++ "\"" ++ " table " ++ "(s++\"$\")" ++ "\n"
+               putStr $ "parse s = parseWithTable " 
+                 ++ "\"" ++ (getStart grammar) ++ "\"" 
+                 ++ " table " ++ "(s++\"$\")" ++ "\n"
 
 parseTableAString =
      "\nnparseWithTable start t s = parse' [start] s where" ++
@@ -62,46 +81,40 @@ parseTableAString =
      "      Just (Production _ rhs) -> parse' (rhsToList rhs ++ rest) s\n" ++
      "    | c == head top = parse' rest cs\n" ++
      "    | otherwise = False\n"
-               
 
-tableA = M.fromList [
-  (("R","$"),[Production {nonterminal = "R", rhs = Empty}]),
-  (("R","b"),[Production {nonterminal = "R", rhs = NonT "R" (Term "b" (NonT "R" Empty))},Production {nonterminal = "R", rhs = Empty}]),
-  (("R","c"),[Production {nonterminal = "R", rhs = Empty}]),
-  (("T","$"),[Production {nonterminal = "T", rhs = NonT "R" Empty}]),
-  (("T","a"),[Production {nonterminal = "T", rhs = Term "a" (NonT "T" (Term "c" Empty))}]),
-  (("T","b"),[Production {nonterminal = "T", rhs = NonT "R" Empty}]),
-  (("T","c"),[Production {nonterminal = "T", rhs = NonT "R" Empty}]),
-  (("T'","$"),[Production {nonterminal = "T'", rhs = NonT "T" (Term "$" Empty)}]),
-  (("T'","a"),[Production {nonterminal = "T'", rhs = NonT "T" (Term "$" Empty)}]),
-  (("T'","b"),[Production {nonterminal = "T'", rhs = NonT "T" (Term "$" Empty)}])]
-
-parseWithTableA start t s = parse' [start] s where
-  parse' [] cs = True
-  parse' _ []  = False
-  parse' st@(top:rest) s@(c:cs)
-    | isUpper (head top) = case M.lookup (top,[c]) t of
-      Nothing -> False
-      Just [Production _ rhs] -> parse' (rhsToList rhs ++ rest) s
-      Just ps -> or . map (helper rest s) $ ps
-    | c == head top = parse' rest cs
-    | otherwise = False
-  helper rest str (Production nt rhs) = 
-    case nt == head newStack of
-         False -> parse' newStack str
-         True -> parse' (tail newStack) str
-    where newStack = rhsToList rhs ++ rest
--- R -> R b R
--- R -> 
+parseWithTableAString = 
+  "\nparseWithTableA start t s = parse' [start] s where\n" ++
+  "  parse' [] cs = True\n" ++
+  "  parse' _ []  = False\n" ++
+  "  parse' st@(top:rest) s@(c:cs)\n" ++
+  "    | isUpper (head top) = case M.lookup (top,[c]) t of\n" ++
+  "      Nothing -> False\n" ++
+  "      Just [Production _ rhs] -> parse' (rhsToList rhs ++ rest) s\n" ++
+  "      Just ps -> or . map (helper rest s) $ ps\n" ++
+  "    | c == head top = parse' rest cs\n" ++
+  "    | otherwise = False\n" ++
+  "  helper rest str (Production nt rhs) = \n" ++
+  "    case nt == head newStack of\n" ++
+  "         False -> parse' newStack str\n" ++
+  "         True -> parse' (tail newStack) str\n" ++
+  "    where newStack = rhsToList rhs ++ rest\n"
 
 rhsToList :: RHS String String -> [String]
 rhsToList Empty = []
 rhsToList (Term t rhs) = t : rhsToList rhs
 rhsToList (NonT nt rhs) = nt : rhsToList rhs
 
-parseA s = parseWithTableA "T'" tableA (s++"$")
-
-generate = undefined
-
+generate grammar table = do
+               putStrLn "module NonLLParser (parse) where "
+               putStrLn "import qualified Data.Map as M"
+               putStrLn "import ContextFreeGrammar"
+               putStrLn "import Data.Char"
+               putStr "\ntableA = M."
+               putStrLn . show $ table
+               putStrLn parseWithTableAString
+               putStrLn rhsString
+               putStr $ "parse s = parseWithTableA " 
+                 ++ "\"" ++ (getStart grammar) ++ "\"" 
+                 ++ " tableA " ++ "(s++\"$\")" ++ "\n"
 
 \end{code}

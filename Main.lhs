@@ -64,6 +64,8 @@ import BadHygiene
 import Table
 import Parser
 
+import qualified Data.Map as M
+
 import System.Environment
 
 main = do 
@@ -73,10 +75,10 @@ main = do
      let grammar' = eliminateUseless . getNewStart $ grammar
      let table = buildTable grammar'
      case table of 
-          Nothing -> putStrLn . show $ buildTableA grammar'
+          Nothing -> do
+            generate grammar' (buildTableA grammar')
           Just t -> 
-                generateStrong grammar' t
-
+            generateStrong grammar' t
 
 \end{code}
 

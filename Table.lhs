@@ -98,18 +98,19 @@ fromTerminalSet ts = S.map fromTerminal' ts
 
 \end{code}
 
-Lastly, we build a table for an LL(1) parser, returning nothing if there is more than one production per entry in the table.
+Lastly, we build a table for a (strong) LL(1) parser, returning nothing if there is more than one production per entry in the table.  In the event that we have more than one entry per spot in the table, we will run a different table building function, whose entries are \emph{lists}, to represent the different possible production rules that apply for a given input token and a non-terminal.
 
 \begin{code}
 
-buildTable' :: GrammarInfo -> Grammar String String -> [String] -> Table -> Maybe Table
+buildTable' :: GrammarInfo -> Grammar String String -> 
+               [String] -> Table -> Maybe Table
 buildTable' _ [] _ acc = Just acc 
-buildTable' gi (p@(Production nt _):ps) terms acc = case fromList acc kvs of
-  Nothing -> Nothing 
-  Just a -> buildTable' gi ps terms a
+buildTable' gi (p@(Production nt _):ps) terms acc = 
+  case fromList acc kvs of
+    Nothing -> Nothing 
+    Just a -> buildTable' gi ps terms a
   where
-    valids = 
-           map fst . L.filter snd . map (\t -> (t,validEntry gi p t)) $ terms
+    valids = L.filter (validEntry gi p) terms
     kvs = map (\v -> ((nt,v),p)) valids
 
 fromList :: Table -> 
@@ -121,9 +122,16 @@ fromList acc ((k@(nt,t),p):ks) = case M.lookup k acc of
 
 buildTable grammar = 
            let terms = getFeature terminals grammar in
-           let gi = GI (M.map fromTerminalSet $ first grammar) (M.map fromTerminalSet $ follow grammar) (nullable grammar) in
+           let gi = GI (M.map fromTerminalSet $ first grammar) 
+                    (M.map fromTerminalSet $ follow grammar) (nullable grammar) in
            let table = buildTable' gi grammar terms M.empty in
            table
+
+\end{code}
+
+Finally, we conclude with code for building a so-called ``ambiguous'' table.  As mentioned above, this table building function is run when we try to build a table for a strong LL(1) parser.  If that fails, we build a table which allows multiple entries at each index, which we represent by lists.
+
+\begin{code}
 
 -- an ambiguous table
 type TableA = M.Map (String, String) ([Production String String])
@@ -135,20 +143,20 @@ fromListA acc ((k@(nt,t),p):ks) = case M.lookup k acc of
   Nothing -> fromListA (M.insert k [p] acc) ks
   Just _ -> fromListA (M.adjust (p:) k acc) ks
 
-buildTableA' :: GrammarInfo -> Grammar String String -> [String] -> TableA -> TableA
+buildTableA' :: GrammarInfo -> Grammar String String -> 
+                [String] -> TableA -> TableA
 buildTableA' _ [] _ acc = acc 
 buildTableA' gi (p@(Production nt _):ps) terms acc =
      buildTableA' gi ps terms (fromListA acc kvs)
        where
-        valids = 
-               map fst . L.filter snd . map (\t -> (t,validEntry gi p t)) $ terms
+        valids = L.filter (validEntry gi p) terms
         kvs = map (\v -> ((nt,v),p)) valids
 
 buildTableA grammar =
            let terms = getFeature terminals grammar in
-           let gi = GI (M.map fromTerminalSet $ first grammar) (M.map fromTerminalSet $ follow grammar) (nullable grammar) in
+           let gi = GI (M.map fromTerminalSet $ first grammar) 
+                    (M.map fromTerminalSet $ follow grammar) (nullable grammar) in
            let table = buildTableA' gi grammar terms M.empty in
            table
-            
 
 \end{code}
