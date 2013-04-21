@@ -1,10 +1,10 @@
-\subsection{Table-driven Parser module}
+\subsection{Table-driven Parser module}\label{parser}
 
 In this section we provide a simple table-driven parser function, |parseWithTable|.  It takes a start non-terminal symbol, a table created in the |Table| module, an input string, and returns a boolean indicating whether the string was successfully parsed or not.
 
-Since we are just creating a parser, but do not know the intended use of the parser, we decided to simply return a boolean.  If necessary, it could be easily modified for other accomodations.
-n
-Lastly, we decided to emit Haskell code as a module for either strong LL(1) or non strong LL(1) parsers, to run on a given text file as input for that the context free grammar it was generated for.
+Since we are just creating a parser, but do not know the intended use of the parser, we decided to simply return a boolean reporting whether the parse was successful or not.  If necessary, it could be easily modified for other accomodations.
+
+Another design decision was to emit Haskell code as a module for either strong LL(1) or non strong LL(1) parsers, to run on a given text file as input for that the context free grammar it was generated for.
 
 For the strong LL(1) case, our parser behaves as required.  The more interesting problem was writing, in Haskell, a parser for non strong LL(1) grammers which attempt to parse in the LL(1) manner, and ``dynamically detect'' if the grammar isn't even LL(1).
 
@@ -14,15 +14,15 @@ In other words, we try all the cases, or as the handout stated: ``if we have no 
 
 Surprisingly, by changing the helper function slightly for checking whether the leftmost symbol on the right hand side of a production matches the production rule (i.e., whether it was left recursive or not), we were able to parse a whole new class of grammars which caused our program to loop infinitely before.
 
-In the end, our implementation for non-strong LL(1) parsers emits a module which marks it as non strong, and parses, if it has to, in a LL(k) manner.  We would have liked to have written a parser that failed, or was unable to perform for idiosyncratic grammars, but we didn't have the time to complete this portion.
+In the end, our implementation for non-strong LL(1) parsers emits a module which marks it as non-strong, and parses, if it has to, in an LL(k) manner.  We would have liked to have written a parser that failed, or was unable to perform for idiosyncratic grammars, but due to a lack of time, we were at a loss on how to subvert the power of Haskell.
 
-Another interesting feature, would have been to check \emph{how} more than one entry was added to the table.  In other words, which portion of this logical statement were false: a production N \(\to \alpha \) is in the table (N,\emph a) \emph{iff} \emph a is in first(\(\alpha\)) \(\lor\) (nullable(\(\alpha\)) \(\land\) \emph a is in follow(\(\alpha\))).
+Another interesting feature would have been to check \emph{how} more than one entry was added to the table.  In other words, how the following logical statement was falsified: a production N \(\to \alpha \) is in the table (N,\emph a) \emph{iff} \emph a is in first(\(\alpha\)) \(\lor\) (nullable(\(\alpha\)) \(\land\) \emph a is in follow(\(\alpha\))).
 
 There are three possible ways it can be made false: the left disjunct is false, and the left conjunct is false; the left disjunct is false, and the right conjunct is false; and the left disjunct is false and both conjuncts in the conjunction are false.
 
 These three different possibilities correspond to bullet points on pg. 248 of the handout, and give hints at how to ``dynamically'' detect features about the given grammar.
 
-Lastly, it would have been better for us to write actual functions which directly eliminate left recursion, and perform left factorization, rather than implementing these features dynamically, but we simply didn't have the time.
+Lastly, it would have been better for us to write actual functions which directly eliminate left recursion, and perform left factorization, rather than implementing these features dynamically, but again, we didn't have the time and opted for a more ``hackish'' approach.
 
 \begin{code}
 

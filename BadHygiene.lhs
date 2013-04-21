@@ -27,7 +27,8 @@ import ScanAndParse
 
 computeReachable :: Ord nt => Grammar nt t -> S.Set nt
 computeReachable [] = S.empty
-computeReachable ps = go (S.singleton . nonterminal . head $ ps) (concat . replicate (length ps) $ ps) where
+computeReachable ps = go (S.singleton . nonterminal . head $ ps) 
+                 (concat . replicate (length ps) $ ps) where
   go marked [] = marked
   go marked ((Production nt rhs):prs) = if S.member nt marked
                                         then go marked' prs
@@ -60,10 +61,13 @@ computeGenerating [] = S.empty
 computeGenerating ps = go S.empty (concat . replicate (length ps) $ ps) where
   allTerms = S.fromList . concatMap (terminals . rhs) $ ps
   go markedNT [] = markedNT
-  go markedNT ((Production nt rhs):prs) = if (all (`S.member` allTerms) . terminals $ rhs) &&
-                                             (all (`S.member` markedNT) . nonTerminals $ rhs)
-                                          then go (S.insert nt markedNT) prs 
-                                          else go markedNT prs
+  go markedNT ((Production nt rhs):prs) = 
+      if (all (`S.member` allTerms) . terminals $ rhs) &&
+         (all (`S.member` markedNT) . nonTerminals $ rhs)
+      then 
+          go (S.insert nt markedNT) prs 
+      else 
+          go markedNT prs
 \end{code}
 
   |eliminateNonGenerating| removes all non Generating Non Terminals from
@@ -75,7 +79,8 @@ eliminateNonGenerating :: (Ord nt, Ord t) => Grammar nt t -> Grammar nt t
 eliminateNonGenerating g = cleanGrammar where
   generating = computeGenerating g
   cleanProductions = Filterable.filter (`S.member` generating) g
-  cleanGrammar = Prelude.filter (\(Production nt rhs) -> S.member nt generating) cleanProductions
+  cleanGrammar = Prelude.filter 
+                 (\(Production nt rhs) -> S.member nt generating) cleanProductions
 
 \end{code}
 
